@@ -1,5 +1,6 @@
 using Pustok.DataAccess.ServiceRegistrations;
 using Pustok.Business.ServiceRegistrations;
+using Pustok.Presentation.Middlewares;
 
 namespace Pustok.Presentation;
 
@@ -14,6 +15,15 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddOpenApi();
 
+
+
+        builder.Services.AddCors(options => options.AddPolicy("MyPolicy", policy =>
+        {
+            policy.AllowAnyOrigin() //WithOrigins("http://localhost:3000", "https://www.examplefrontend.com")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }));
+
         builder.Services.AddDataAccessServices(builder.Configuration);
         builder.Services.AddBusinessServices();
 
@@ -23,17 +33,20 @@ public class Program
 
         var app = builder.Build();
 
+        app.UseMiddleware<GlobalExceptionHandler>();
+
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
-        {
+        { 
             app.UseSwagger(); // Enables middleware to serve generated Swagger as a JSON endpoint
             app.UseSwaggerUI(); // Enables middleware to serve swagger-ui (HTML, JS, CSS, etc.)
         }
 
         app.UseHttpsRedirection();
 
-        app.UseAuthorization();
+        app.UseCors("MyPolicy");
 
+        app.UseAuthorization();
 
         app.MapControllers();
 

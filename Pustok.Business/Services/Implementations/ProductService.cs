@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Pustok.Business.Dtos.ResultDtos;
 using Pustok.Business.Exceptions;
 using Pustok.Business.Services.Abstractions;
 using Pustok.Core.Entites;
@@ -9,7 +10,7 @@ namespace Pustok.Business.Services.Implementations;
 
 internal class ProductService(IProductRepository _repository, IMapper _mapper, ICloudinaryService _cloudinaryService) : IProductService
 {
-    public async Task CreateAsync(ProductCreateDto dto)
+    public async Task<ResultDto> CreateAsync(ProductCreateDto dto)
     {
         var product = _mapper.Map<Product>(dto);
 
@@ -19,9 +20,11 @@ internal class ProductService(IProductRepository _repository, IMapper _mapper, I
 
         await _repository.AddAsync(product);
         await _repository.SaveChangesAsync();
+
+        return new("Created");
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task<ResultDto> DeleteAsync(Guid id)
     {
         var product = await _repository.GetByIdAsync(id);
 
@@ -33,18 +36,20 @@ internal class ProductService(IProductRepository _repository, IMapper _mapper, I
 
 
         await _cloudinaryService.FileDeleteAsync(product.ImagePath);
+
+        return new("Deleted");
     }
 
-    public async Task<List<ProductGetDto>> GetAllAsync()
+    public async Task<ResultDto<List<ProductGetDto>>> GetAllAsync()
     {
         var products = await _repository.GetAll().Include(x => x.Category).ToListAsync();
 
         var dtos = _mapper.Map<List<ProductGetDto>>(products);
 
-        return dtos;
+        return new(dtos);
     }
 
-    public async Task<ProductGetDto> GetAsync(Guid id)
+    public async Task<ResultDto<ProductGetDto>> GetAsync(Guid id)
     {
 
         var product = await _repository.GetByIdAsync(id);
@@ -54,10 +59,10 @@ internal class ProductService(IProductRepository _repository, IMapper _mapper, I
 
         var dto = _mapper.Map<ProductGetDto>(product);
 
-        return dto;
+        return new(dto);
     }
 
-    public async Task UpdateAsync(ProductUpdateDto dto)
+    public async Task<ResultDto> UpdateAsync(ProductUpdateDto dto)
     {
 
         var product = await _repository.GetByIdAsync(dto.Id);
@@ -76,5 +81,7 @@ internal class ProductService(IProductRepository _repository, IMapper _mapper, I
 
         _repository.Update(product);
         await _repository.SaveChangesAsync();
+
+        return new("Updated");
     }
 }

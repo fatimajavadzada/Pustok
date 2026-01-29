@@ -1,10 +1,7 @@
-﻿namespace Pustok.Business.Dtos;
+﻿namespace Pustok.Core.Entites.Common;
 
-public class CategoryGetDto
+public abstract class BaseAuditableEntity : BaseEntity
 {
-    public Guid Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public List<ProductGetDto> Products { get; set; } = [];
     public string CreatedBy { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public string? UpdatedBy { get; set; }
